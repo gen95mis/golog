@@ -72,8 +72,22 @@ func parsLevel(level string) (Level, error) {
 	}
 }
 
+// Panic эквивалентно вызову panic() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Panic(v ...interface{}) {
+	const lvl = LvlPanic
+	const plvl = "[Panic]"
+	if !l.checkLevel(lvl) {
+		return
+	}
+
+	prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
+
+	l.logger.Panic(prefix, " ", v)
+	log.Panic(prefix, " ", v)
+}
+
 // Panicf эквивалентно вызову panicf() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Panicf(format string, args ...interface{}) {
+func (l *Logger) Panicf(format string, v ...interface{}) {
 	const lvl = LvlPanic
 	const plvl = "[Panic]"
 	if !l.checkLevel(lvl) {
@@ -82,12 +96,12 @@ func (l *Logger) Panicf(format string, args ...interface{}) {
 
 	prefix := fmt.Sprintf("%s %s %s", plvl, l.prefix, format)
 
-	l.logger.Panicf(prefix, args)
-	log.Panicf(prefix, args)
+	l.logger.Panicf(prefix, v)
+	log.Panicf(prefix, v)
 }
 
 // Panicln эквивалентно вызову panicln() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Panic(args ...interface{}) {
+func (l *Logger) Panicln(v ...interface{}) {
 	const lvl = LvlPanic
 	const plvl = "[Panic]"
 	if !l.checkLevel(lvl) {
@@ -96,26 +110,12 @@ func (l *Logger) Panic(args ...interface{}) {
 
 	prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
 
-	l.logger.Panicln(prefix, args)
-	log.Panicln(prefix, args)
+	l.logger.Panicln(prefix, " ", v)
+	log.Panicln(prefix, " ", v)
 }
 
-// Fatalf эквивалентно вызову fatalf() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Fatalf(format string, args ...interface{}) {
-	const lvl = LvlFatal
-	const plvl = "[FATAL]"
-	if !l.checkLevel(lvl) {
-		return
-	}
-
-	prefix := fmt.Sprintf("%s %s %s", plvl, l.prefix, format)
-
-	l.logger.Printf(prefix, args)
-	log.Fatalf(prefix, args)
-}
-
-// Fatal эквивалентно вызову fatalln() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Fatal(args ...interface{}) {
+// Fatal эквивалентно вызову fatal() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Fatal(v ...interface{}) {
 	const lvl = LvlFatal
 	const plvl = "[FATAL]"
 	if !l.checkLevel(lvl) {
@@ -124,26 +124,40 @@ func (l *Logger) Fatal(args ...interface{}) {
 
 	prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
 
-	l.logger.Fatalln(prefix, args)
-	log.Fatalln(prefix, args)
+	l.logger.Fatal(prefix, " ", v)
+	log.Fatal(prefix, " ", v)
 }
 
-// Errorf  эквивалентно вызову Printf() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Errorf(format string, args ...interface{}) {
-	go func() {
-		const lvl = LvlError
-		const plvl = "[ERROR]"
-		if !l.checkLevel(lvl) {
-			return
-		}
+// Fatalf эквивалентно вызову fatalf() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Fatalf(format string, v ...interface{}) {
+	const lvl = LvlFatal
+	const plvl = "[FATAL]"
+	if !l.checkLevel(lvl) {
+		return
+	}
 
-		prefix := fmt.Sprintf("%s %s %s", plvl, l.prefix, format)
-		l.logger.Printf(prefix, args)
-	}()
+	prefix := fmt.Sprintf("%s %s %s", plvl, l.prefix, format)
+
+	l.logger.Printf(prefix, v)
+	log.Fatalf(prefix, v)
 }
 
-// Error  эквивалентно вызову Println() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Error(args ...interface{}) {
+// Fatalln эквивалентно вызову fatalln() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Fatalln(v ...interface{}) {
+	const lvl = LvlFatal
+	const plvl = "[FATAL]"
+	if !l.checkLevel(lvl) {
+		return
+	}
+
+	prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
+
+	l.logger.Fatalln(prefix, v)
+	log.Fatalln(prefix, v)
+}
+
+// Error эквивалентно вызову Print() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Error(v ...interface{}) {
 	go func() {
 		const lvl = LvlError
 		const plvl = "[ERROR]"
@@ -152,12 +166,54 @@ func (l *Logger) Error(args ...interface{}) {
 		}
 
 		prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
-		l.logger.Printf(prefix, args)
+		l.logger.Print(prefix, " ", v)
+	}()
+}
+
+// Errorf эквивалентно вызову Printf() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	go func() {
+		const lvl = LvlError
+		const plvl = "[ERROR]"
+		if !l.checkLevel(lvl) {
+			return
+		}
+
+		prefix := fmt.Sprintf("%s %s %s", plvl, l.prefix, format)
+		l.logger.Printf(prefix, v)
+	}()
+}
+
+// Errorln эквивалентно вызову Println() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Errorln(v ...interface{}) {
+	go func() {
+		const lvl = LvlError
+		const plvl = "[ERROR]"
+		if !l.checkLevel(lvl) {
+			return
+		}
+
+		prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
+		l.logger.Println(prefix, v)
+	}()
+}
+
+// Warn эквивалентно вызову Print() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Warn(v ...interface{}) {
+	go func() {
+		const lvl = LvlWarn
+		const plvl = "[WARN]"
+		if !l.checkLevel(lvl) {
+			return
+		}
+
+		prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
+		l.logger.Printf(prefix, " ", v)
 	}()
 }
 
 // Warnf эквивалентно вызову Printf() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Warnf(format string, args ...interface{}) {
+func (l *Logger) Warnf(format string, v ...interface{}) {
 	go func() {
 		const lvl = LvlWarn
 		const plvl = "[WARN]"
@@ -166,12 +222,12 @@ func (l *Logger) Warnf(format string, args ...interface{}) {
 		}
 
 		prefix := fmt.Sprintf("%s %s %s", plvl, l.prefix, format)
-		l.logger.Printf(prefix, args)
+		l.logger.Printf(prefix, v)
 	}()
 }
 
 // Warn эквивалентно вызову Println() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Warn(args ...interface{}) {
+func (l *Logger) Warnln(v ...interface{}) {
 	go func() {
 		const lvl = LvlWarn
 		const plvl = "[WARN]"
@@ -180,12 +236,26 @@ func (l *Logger) Warn(args ...interface{}) {
 		}
 
 		prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
-		l.logger.Println(prefix, args)
+		l.logger.Println(prefix, v)
+	}()
+}
+
+// Info эквивалентно вызову Print() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Info(v ...interface{}) {
+	go func() {
+		const lvl = LvlInfo
+		const plvl = "[INFO]"
+		if !l.checkLevel(lvl) {
+			return
+		}
+
+		prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
+		l.logger.Print(prefix, " ", v)
 	}()
 }
 
 // Infof эквивалентно вызову Printf() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Infof(format string, args ...interface{}) {
+func (l *Logger) Infof(format string, v ...interface{}) {
 	go func() {
 		const lvl = LvlInfo
 		const plvl = "[INFO]"
@@ -194,12 +264,12 @@ func (l *Logger) Infof(format string, args ...interface{}) {
 		}
 
 		prefix := fmt.Sprintf("%s %s %s", plvl, l.prefix, format)
-		l.logger.Printf(prefix, args)
+		l.logger.Printf(prefix, v)
 	}()
 }
 
-// Info эквивалентно вызову Println() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Info(args ...interface{}) {
+// Infoln эквивалентно вызову Println() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Infoln(v ...interface{}) {
 	go func() {
 		const lvl = LvlInfo
 		const plvl = "[INFO]"
@@ -207,13 +277,27 @@ func (l *Logger) Info(args ...interface{}) {
 			return
 		}
 
-		newFormat := fmt.Sprintf("%s %s", plvl, l.prefix)
-		l.logger.Println(newFormat, args)
+		prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
+		l.logger.Println(prefix, v)
+	}()
+}
+
+// Debug эквивалентно вызову Print() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Debug(v ...interface{}) {
+	go func() {
+		const lvl = LvlDebug
+		const plvl = "[DEBUG]"
+		if !l.checkLevel(lvl) {
+			return
+		}
+
+		prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
+		l.logger.Println(prefix, v)
 	}()
 }
 
 // Debugf эквивалентно вызову Printf() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Debugf(format string, args ...interface{}) {
+func (l *Logger) Debugf(format string, v ...interface{}) {
 	go func() {
 		const lvl = LvlDebug
 		const plvl = "[DEBUG]"
@@ -222,12 +306,12 @@ func (l *Logger) Debugf(format string, args ...interface{}) {
 		}
 
 		prefix := fmt.Sprintf("%s %s %s", plvl, l.prefix, format)
-		l.logger.Printf(prefix, args)
+		l.logger.Printf(prefix, v)
 	}()
 }
 
-// Debug эквивалентно вызову Println() из стандартной библиотеки golang с записью в журнал
-func (l *Logger) Debug(args ...interface{}) {
+// Debugln эквивалентно вызову Println() из стандартной библиотеки golang с записью в журнал
+func (l *Logger) Debugln(v ...interface{}) {
 	go func() {
 		const lvl = LvlDebug
 		const plvl = "[DEBUG]"
@@ -235,9 +319,21 @@ func (l *Logger) Debug(args ...interface{}) {
 			return
 		}
 
-		newFormat := fmt.Sprintf("%s %s", plvl, l.prefix)
-		l.logger.Println(newFormat, args)
+		prefix := fmt.Sprintf("%s %s", plvl, l.prefix)
+		l.logger.Println(prefix, v)
 	}()
+}
+
+func (l *Logger) Print(v ...interface{}) {
+	l.logger.Print(v)
+}
+
+func (l *Logger) Printf(format string, v ...interface{}) {
+	l.logger.Panicf(format, v)
+}
+
+func (l *Logger) Println(v ...interface{}) {
+	l.logger.Println(v)
 }
 
 func (l *Logger) checkLevel(lvl Level) bool {

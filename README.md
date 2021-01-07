@@ -3,7 +3,7 @@
 ## Установка
 
 ```
-go get ...
+go get github.com/gen95mis/golog
 ```
 
 ---
